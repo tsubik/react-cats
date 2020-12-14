@@ -15,6 +15,14 @@
     @apply bg-blue-500;
   }
 
+  .btn-red {
+    @apply bg-red-700 text-white;
+  }
+
+  .bin-red:hover {
+    @apply bg-red-500;
+  }
+
   .input {
     @apply border border-gray-400 p-2 rounded;
   }

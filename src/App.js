@@ -15,14 +15,26 @@ function fetchScans(filter, sortBy, page, perPage) {
   if (sortBy) {
     searchParams.append('sort', JSON.stringify(sortBy.split('_')))
   }
+  const headers = new Headers();
   if (page && perPage) {
     const rangeStart = (page - 1) * perPage;
     const rangeEnd = rangeStart + perPage - 1;
-    searchParams.append('range', `[${rangeStart}-${rangeEnd}]`);
+    const rangeString = `[${rangeStart}-${rangeEnd}]`;
+    searchParams.append('range', rangeString);
+
+    headers.append('Range', `scans=${rangeString}`)
   }
   const queryString = fixedEncode(searchParams.toString());
   console.log('searchParams', queryString);
-  return fetch('http://localhost:3000/scans?' + queryString).then(res => res.json());
+  return fetch('http://localhost:3000/scans?' + queryString, { headers })
+    .then(async res => {
+      console.log('fetch response headers', res.headers);
+      const data = await res.json();
+
+      return {
+        data
+      };
+    });
 }
 
 function updateScan(scan) {
@@ -43,6 +55,10 @@ function createScan(scan) {
     },
     body: JSON.stringify(scan)
   });
+}
+
+function removeScan(scanId) {
+  return fetch(`http://localhost:3000/scans/${scanId}`, { method: 'DELETE' });
 }
 
 Modal.setAppElement('#root');
@@ -100,8 +116,12 @@ function App() {
   }, [])
 
   async function updateList({ filter, sortBy, page, perPage }) {
-    const data = await fetchScans(filter, sortBy, page, perPage);
-    setScans(data);
+    const results = await fetchScans(filter, sortBy, page, perPage);
+    setScans(results.data);
+  }
+
+  function refreshList() {
+    updateList({ filter, sortBy, page, perPage })
   }
 
   function closeModal(){
@@ -121,13 +141,13 @@ function App() {
 
   async function handleEdit(scan) {
     await updateScan(scan);
-    updateList();
+    refreshList();
     setEditOpen(false);
   }
 
   async function handleNew(scan) {
     await createScan(scan);
-    updateList();
+    refreshList();
     setNewOpen(false);
   }
 
@@ -142,6 +162,12 @@ function App() {
 
   function handlePerPageChange(e) {
     setPerPage(e.target.value);
+  }
+
+  async function handleScanRemove(scanId, e) {
+    e.stopPropagation();
+    await removeScan(scanId);
+    setScans(scans.filter(s => s.id !== scanId));
   }
 
   return (
@@ -183,8 +209,13 @@ function App() {
       </button>
 
       {scans.map((scan) => (
-        <div key={scan.id} className="p-2 my-2 border border-gray-700 shadow-lg rounded" onClick={openEditModal.bind(this, scan)}>
-          {scan.title}
+        <div key={scan.id} className="flex justify-between items-center p-2 my-2 border border-gray-700 shadow-lg rounded" onClick={openEditModal.bind(this, scan)}>
+          <div>
+            {scan.title}
+          </div>
+          <button type="button" className="btn btn-red" onClick={handleScanRemove.bind(this, scan.id)}>
+            Remove
+          </button>
         </div>
       ))}
 

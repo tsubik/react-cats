@@ -22,6 +22,9 @@ const data = {
     { id: 8, patient_id: 1, title: 'My third scan' },
     { id: 9, patient_id: 1, title: 'My third scan' },
     { id: 10, patient_id: 1, title: 'My third scan' },
+    { id: 11, patient_id: 1, title: 'My third scan' },
+    { id: 12, patient_id: 1, title: 'My third scan' },
+    { id: 13, patient_id: 1, title: 'My third scan' }
   ]
 };
 
@@ -29,6 +32,10 @@ const data = {
 const restServer = new FakeRest.FetchServer('http://localhost:3000');
 restServer.toggleLogging();
 restServer.init(data);
+restServer.addResponseInterceptor(function (response) {
+  console.log('Response interceptor', response);
+  return response;
+});
 fetchMock.mock('begin:http://localhost:3000', restServer.getHandler());
 
 ReactDOM.render(
