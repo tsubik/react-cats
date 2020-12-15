@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
-import Modal from 'react-modal';
 
-import ScanForm from './ScanForm';
+import ScanModal from './ScanModal';
 
 import scanService from './scan';
 
@@ -38,11 +37,6 @@ export default function List() {
 
   function refreshList() {
     updateList({ filter, sortBy, page, perPage })
-  }
-
-  function closeModal(){
-    setEditOpen(false);
-    setNewOpen(false);
   }
 
   function openEditModal(scan) {
@@ -83,7 +77,7 @@ export default function List() {
   async function handleScanRemove(scanId, e) {
     e.stopPropagation();
     await scanService.removeScan(scanId);
-    setScans(scans.filter(s => s.id !== scanId));
+    refreshList();
   }
 
   return (
@@ -141,29 +135,8 @@ export default function List() {
         </button>
       )}
 
-      {editedScan && (
-        <Modal
-          isOpen={editOpen}
-          onRequestClose={closeModal}
-          contentLabel="Example Modal"
-        >
-          <h2>Edit Scan</h2>
-          <button onClick={closeModal}>close</button>
-          <ScanForm scan={editedScan} onSubmit={handleEdit} />
-        </Modal>
-      )}
-
-      {newScan && (
-        <Modal
-          isOpen={newOpen}
-          onRequestClose={closeModal}
-          contentLabel="Example Modal"
-        >
-          <h2>New Scan</h2>
-          <button onClick={closeModal}>close</button>
-          <ScanForm scan={newScan} onSubmit={handleNew} />
-        </Modal>
-      )}
+      {editedScan && <ScanModal header="Edit scan" isOpen={editOpen} scan={editedScan} onClose={() => setEditOpen(false)} onSubmit={handleEdit} />}
+      {newScan && <ScanModal header="New scan" isOpen={newOpen} scan={newScan} onClose={() => setNewOpen(false)} onSubmit={handleNew} />}
     </div>
   );
 }

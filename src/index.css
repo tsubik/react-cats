@@ -4,7 +4,23 @@
 
 @layer components {
   .btn {
-    @apply font-bold py-2 px-4 rounded;
+    @apply font-bold uppercase text-sm py-3 px-6 rounded shadow outline-none;
+  }
+
+  .btn:focus {
+    @apply outline-none;
+  }
+
+  .btn:hover {
+    @apply shadow-lg;
+  }
+
+  .btn-green {
+    @apply bg-green-500 text-white;
+  }
+
+  .btn-green:active {
+    @apply bg-green-600;
   }
 
   .btn-blue {
@@ -25,5 +41,16 @@
 
   .input {
     @apply border border-gray-400 p-2 rounded;
+  }
+
+  .modal {
+    @apply border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none;
+    @apply max-w-xl mx-auto;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .modal__header {
+    @apply flex items-start justify-between p-5 border-b border-solid border-gray-300 rounded-t;
   }
 }
