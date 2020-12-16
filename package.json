@@ -8,6 +8,7 @@
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
     "autoprefixer": "^9.8.6",
+    "classnames": "^2.2.6",
     "fakerest": "^2.2.0",
     "fetch-mock": "^5.13.1",
     "postcss": "^7.0.35",

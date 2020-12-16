@@ -20,16 +20,25 @@ const scan = {
 
       headers.append('Range', `scans=${rangeString}`)
     }
+
     const queryString = fixedEncode(searchParams.toString());
     console.log('searchParams', queryString);
     return fetch('http://localhost:3000/scans?' + queryString, { headers })
       .then(async res => {
-        console.log('fetch response headers', res.headers);
+        const rangeString = res.headers.get('Content-Range').replace('items ', '');
+        const [fetchedRange, totalCount] = rangeString.split('/');
         const data = await res.json();
 
-        return {
-          data
+        const results = {
+          data,
+          fetchedRange,
+          totalCount,
+          hasMore: Number(fetchedRange.split('-')[1]) + 1 < Number(totalCount)
         };
+
+        console.log('Fetching scans', results);
+
+        return results;
       });
   },
 

@@ -2,12 +2,15 @@ import { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 
 import ScanModal from './ScanModal';
+import Button from './Button';
+import Card from './Card';
 
 import scanService from './scan';
 
 const sortOptions = {
   'title_desc': 'Title Descending',
-  'title_asc': 'Title Ascending'
+  'title_asc': 'Title Ascending',
+  'id_asc': 'Id Ascending'
 };
 
 export default function List() {
@@ -20,7 +23,7 @@ export default function List() {
   const [editedScan, setEditedScan] = useState();
 
   const [filter, setFilter] = useState('');
-  const [sortBy, setSortBy] = useState('title_desc');
+  const [sortBy, setSortBy] = useState('id_asc');
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
 
@@ -30,13 +33,28 @@ export default function List() {
     updateList({ filter, sortBy, page, perPage });
   }, [])
 
-  async function updateList({ filter, sortBy, page, perPage }) {
+  useEffect(() => {
+    setPage(1);
+    updateList({ filter, sortBy, page: 1, perPage });
+  }, [perPage]);
+
+  async function updateList({ filter, sortBy, page, perPage }, reset = true) {
     const results = await scanService.fetchAll(filter, sortBy, page, perPage);
-    setScans(results.data);
+
+    if (reset) {
+      setScans(results.data);
+    } else {
+      setScans((scans) => [...scans, ...results.data]);
+    }
+
+    setShowLoadMore(results.hasMore);
   }
 
   function refreshList() {
-    updateList({ filter, sortBy, page, perPage })
+    const takePage = page === 1 ? page : 1;
+    const takePerPage = page === 1 ? perPage : (page + 1) * perPage;
+
+    updateList({ filter, sortBy, page: takePage, perPage: takePerPage })
   }
 
   function openEditModal(scan) {
@@ -47,6 +65,12 @@ export default function List() {
   function handleSearch(e) {
     e.preventDefault();
     refreshList();
+  }
+
+  async function handleLoadMore() {
+
+    updateList({ filter, sortBy, page: page + 1, perPage }, false);
+    setPage((p) => p + 1);
   }
 
   async function handleEdit(scan) {
@@ -109,28 +133,30 @@ export default function List() {
           <option value="10">10</option>
         </select>
 
-        <button type="submit" className="ml-3 btn btn-blue">
+        <Button type="submit" color="blue" className="ml-3">
           Search
-        </button>
+        </Button>
       </form>
 
       <button type="button" className="btn btn-blue" onClick={handleAdd}>
         Add new
       </button>
 
-      {scans.map((scan) => (
-        <div key={scan.id} className="flex justify-between items-center p-2 my-2 border border-gray-700 shadow-lg rounded" onClick={openEditModal.bind(this, scan)}>
-          <div>
-            {scan.title}
-          </div>
-          <button type="button" className="btn btn-red" onClick={handleScanRemove.bind(this, scan.id)}>
-            Remove
-          </button>
-        </div>
-      ))}
+      <div className="grid grid-cols-3 gap-2">
+        {scans.map((scan) => (
+          <Card key={scan.id} onClick={openEditModal.bind(this, scan)}>
+            <div>
+              {scan.id}: {scan.title}
+            </div>
+            <button type="button" className="btn btn-red" onClick={handleScanRemove.bind(this, scan.id)}>
+              Remove
+            </button>
+          </Card>
+        ))}
+      </div>
 
       {showLoadMore && (
-        <button type="button" className="btn btn-blue">
+        <button type="button" className="btn btn-blue" onClick={handleLoadMore}>
           Load more
         </button>
       )}
