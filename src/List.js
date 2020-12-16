@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 
 import ScanModal from './ScanModal';
 import Button from './Button';
@@ -14,8 +14,6 @@ const sortOptions = {
 };
 
 export default function List() {
-  const [scans, setScans] = useState([]);
-
   const [editOpen, setEditOpen] = useState(false);
   const [newOpen, setNewOpen] = useState(false);
   const [newScan, setNewScan] = useState({});
@@ -27,50 +25,34 @@ export default function List() {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
 
-  const [showLoadMore, setShowLoadMore] = useState(true);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    updateList({ filter, sortBy, page, perPage });
-  }, [])
+  const { data } = useQuery(
+    ['scans', { filter, sortBy, page, perPage }],
+    async () => {
+      return scanService.fetchAll(filter, sortBy, page, perPage);
+    }
+  );
+  const { data: scans, hasMore: showLoadMore } = data || {
+    data: [],
+    hasMore: false
+  };
 
   useEffect(() => {
     setPage(1);
-    updateList({ filter, sortBy, page: 1, perPage });
   }, [perPage]);
-
-  async function updateList({ filter, sortBy, page, perPage }, reset = true) {
-    const results = await scanService.fetchAll(filter, sortBy, page, perPage);
-
-    if (reset) {
-      setScans(results.data);
-    } else {
-      setScans((scans) => [...scans, ...results.data]);
-    }
-
-    setShowLoadMore(results.hasMore);
-  }
-
-  function refreshList() {
-    const takePage = page === 1 ? page : 1;
-    const takePerPage = page === 1 ? perPage : (page + 1) * perPage;
-
-    updateList({ filter, sortBy, page: takePage, perPage: takePerPage })
-  }
 
   function openEditModal(scan) {
     setEditedScan(scan);
     setEditOpen(true);
   }
 
-  function handleSearch(e) {
-    e.preventDefault();
-    refreshList();
+  async function handleLoadMore() {
+    setPage((p) => p + 1);
   }
 
-  async function handleLoadMore() {
-
-    updateList({ filter, sortBy, page: page + 1, perPage }, false);
-    setPage((p) => p + 1);
+  function refreshList() {
+    queryClient.invalidateQueries('scans');
   }
 
   async function handleEdit(scan) {
@@ -106,9 +88,7 @@ export default function List() {
 
   return (
     <div className="container">
-      <form
-        onSubmit={handleSearch}
-        noValidate
+      <div
         className="p-2 bg-gray-300 rounded flex items-center space-x-3"
       >
         <label>
@@ -132,33 +112,29 @@ export default function List() {
           <option value="5">5</option>
           <option value="10">10</option>
         </select>
+      </div>
 
-        <Button type="submit" color="blue" className="ml-3">
-          Search
-        </Button>
-      </form>
+      <Button color="blue" onClick={handleAdd}>
+        Add New
+      </Button>
 
-      <button type="button" className="btn btn-blue" onClick={handleAdd}>
-        Add new
-      </button>
-
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         {scans.map((scan) => (
           <Card key={scan.id} onClick={openEditModal.bind(this, scan)}>
             <div>
               {scan.id}: {scan.title}
             </div>
-            <button type="button" className="btn btn-red" onClick={handleScanRemove.bind(this, scan.id)}>
+            <Button color="red" onClick={handleScanRemove.bind(this, scan.id)}>
               Remove
-            </button>
+            </Button>
           </Card>
         ))}
       </div>
 
       {showLoadMore && (
-        <button type="button" className="btn btn-blue" onClick={handleLoadMore}>
+        <Button color="blue" onClick={handleLoadMore}>
           Load more
-        </button>
+        </Button>
       )}
 
       {editedScan && <ScanModal header="Edit scan" isOpen={editOpen} scan={editedScan} onClose={() => setEditOpen(false)} onSubmit={handleEdit} />}

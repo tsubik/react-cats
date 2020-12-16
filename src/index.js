@@ -32,10 +32,6 @@ const data = {
 const restServer = new FakeRest.FetchServer('http://localhost:3000');
 restServer.toggleLogging();
 restServer.init(data);
-restServer.addResponseInterceptor(function (response) {
-  console.log('Response interceptor', response);
-  return response;
-});
 fetchMock.mock('begin:http://localhost:3000', restServer.getHandler());
 
 ReactDOM.render(

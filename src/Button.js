@@ -5,17 +5,18 @@ const COLORS = {
   'red': 'btn-red'
 };
 
-function Button ({ color = 'blue', className, ...rest }) {
+function Button ({ type = 'button', color = 'blue', className, children, ...rest }) {
   return (
     <button
       {...rest}
+      type={type}
       className={cx({
         'btn': true,
         [COLORS[color]]: true,
         [className]: !!className
       })}
     >
-      Search
+      {children}
     </button>
   )
 }
