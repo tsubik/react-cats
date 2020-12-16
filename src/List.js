@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useQuery, useQueryClient } from 'react-query';
+import { useQuery, useInfiniteQuery, useQueryClient } from 'react-query';
 
 import ScanModal from './ScanModal';
 import Button from './Button';
@@ -22,24 +22,36 @@ export default function List() {
 
   const [filter, setFilter] = useState('');
   const [sortBy, setSortBy] = useState('id_asc');
-  const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
 
   const queryClient = useQueryClient();
 
-  const { data } = useQuery(
-    ['scans', { filter, sortBy, page, perPage }],
-    async () => {
-      return scanService.fetchAll(filter, sortBy, page, perPage);
+  const {
+    data,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
+    isFetchingNextPage,
+    status,
+  } = useInfiniteQuery(['scans', { filter, sortBy, perPage }], async ({ pageParam = 1 }) => {
+    const data = await scanService.fetchAll(filter, sortBy, pageParam, perPage);
+
+    return {
+      ...data,
+      page: pageParam
+    };
+  }, {
+    getNextPageParam: (lastPage, pages) => {
+      if (!lastPage.hasMore) return;
+
+      return lastPage.page + 1;
     }
-  );
-  const { data: scans, hasMore: showLoadMore } = data || {
-    data: [],
-    hasMore: false
-  };
+  })
+  const scans = (data && data.pages.reduce((acc, page) => [...acc, ...page.data], [])) || [];
 
   useEffect(() => {
-    setPage(1);
+
   }, [perPage]);
 
   function openEditModal(scan) {
@@ -48,7 +60,7 @@ export default function List() {
   }
 
   async function handleLoadMore() {
-    setPage((p) => p + 1);
+    fetchNextPage();
   }
 
   function refreshList() {
@@ -131,9 +143,9 @@ export default function List() {
         ))}
       </div>
 
-      {showLoadMore && (
+      {hasNextPage && (
         <Button color="blue" onClick={handleLoadMore}>
-          Load more
+          {isFetchingNextPage ? 'Loading more...' : 'Load more'}
         </Button>
       )}
 
