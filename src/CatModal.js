@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 
+import Button from './Button';
+
 export default function CatModal({ cat, header, isOpen, onSubmit, onClose }) {
   const [edited, setEdited] = useState(cat);
 
@@ -44,25 +46,27 @@ export default function CatModal({ cat, header, isOpen, onSubmit, onClose }) {
 
       <form onSubmit={handleSubmit} noValidate>
         <div className="relative p-6 flex-auto">
-          <input type="text" value={edited.name} className="input" onChange={handleValueChange('name')} /><br/>
+          <label className="block">
+            <span className="text-gray-700">Name</span>
+            <input type="text" value={edited.name} className="input block" onChange={handleValueChange('name')} /><br/>
+          </label>
         </div>
 
         <div className="flex items-center justify-end p-6 border-t border-solid border-gray-300 rounded-b">
-          <button
-            className="btn btn-red mr-2"
+          <Button
+            color="red"
             type="button"
-            style={{ transition: "all .15s ease" }}
+            className="mr-2"
             onClick={onClose}
           >
             Close
-          </button>
-          <button
-            className="btn btn-green"
+          </Button>
+          <Button
+            color="green"
             type="submit"
-            style={{ transition: "all .15s ease" }}
           >
             Save Changes
-          </button>
+          </Button>
         </div>
       </form>
     </Modal>

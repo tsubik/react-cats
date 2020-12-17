@@ -10,9 +10,9 @@ import catService from './cat';
 import { useDebounce } from './hooks';
 
 const sortOptions = {
-  'title_desc': 'Title Descending',
-  'title_asc': 'Title Ascending',
-  'id_asc': 'Id Ascending'
+  'name_desc': 'Name Z-A Descending',
+  'name_asc': 'Name A-Z',
+  'id_asc': 'Newest first'
 };
 
 export default function List() {
@@ -32,8 +32,8 @@ export default function List() {
   const queryClient = useQueryClient();
 
   const {
-    data,
-    error,
+    /* data, */
+    /* error, */
     fetchNextPage,
     hasNextPage,
     isFetching,
@@ -103,36 +103,36 @@ export default function List() {
   return (
     <div className="container">
       <div
-        className="p-2 bg-gray-300 rounded flex items-center space-x-3"
+        className="p-4 bg-gray-100 rounded flex items-center space-x-3 my-5"
       >
-        <label>
-          Filter:
+        <label className="block">
+          <span className="text-gray-700">Filter</span>
+          <input type="text" className="input block" value={filterValue} onChange={(e) => setFilterValue(e.target.value)} />
         </label>
-        <input type="text" className="ml-3 input" value={filterValue} onChange={(e) => setFilterValue(e.target.value)} />
 
-        <label htmlFor="sortby">
-          Sort By:
+        <label className="block">
+          <span className="text-gray-700">Sort By</span>
+          <select className="select block" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+            {Object.keys(sortOptions).map((key) => (
+              <option key={key} value={key}>{sortOptions[key]}</option>
+            ))}
+          </select>
         </label>
-        <select name="sortby" id="sortby" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-          {Object.keys(sortOptions).map((key) => (
-            <option key={key} value={key}>{sortOptions[key]}</option>
-          ))}
-        </select>
 
-        <label htmlFor="perpage">
-          Per page:
+        <label className="block">
+          <span className="text-gray-700">Per page</span>
+          <select className="select block" value={perPage} onChange={(e) => setPerPage(e.target.value)}>
+            <option value="6">6</option>
+            <option value="12">12</option>
+          </select>
         </label>
-        <select name="perpage" id="perpage" value={perPage} onChange={(e) => setPerPage(e.target.value)}>
-          <option value="6">6</option>
-          <option value="12">12</option>
-        </select>
       </div>
 
-      <Button color="blue" onClick={handleAdd}>
+      <Button color="green" className="block mx-auto my-5" onClick={handleAdd}>
         Add New
       </Button>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-6">
         {cats.map((cat) => (
           <Card key={cat.id} onClick={openEditModal.bind(this, cat)}>
             <img src={cat.image} className="object-cover rounded-full h-40 w-40" alt="Cat avatar" />
@@ -145,7 +145,7 @@ export default function List() {
       </div>
 
       {hasNextPage && (
-        <Button color="blue" onClick={handleLoadMore}>
+        <Button color="blue" className="block mx-auto my-5" onClick={handleLoadMore}>
           {isFetchingNextPage ? 'Loading more...' : 'Load more'}
         </Button>
       )}

@@ -1,7 +1,6 @@
 import './index.css';
 
-import { useEffect, useState } from 'react';
-import { QueryClient, QueryClientProvider, useQuery } from 'react-query'
+import { QueryClient, QueryClientProvider } from 'react-query'
 
 import Modal from 'react-modal';
 
