@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useInfiniteQuery, useQueryClient } from 'react-query';
 
-import ScanModal from './ScanModal';
+import CatModal from './CatModal';
 import Button from './Button';
 import Card from './Card';
 
-import scanService from './scan';
+import catService from './cat';
 
 import { useDebounce } from './hooks';
 
@@ -18,14 +18,14 @@ const sortOptions = {
 export default function List() {
   const [editOpen, setEditOpen] = useState(false);
   const [newOpen, setNewOpen] = useState(false);
-  const [newScan, setNewScan] = useState({});
+  const [newCat, setNewCat] = useState({});
 
-  const [editedScan, setEditedScan] = useState();
+  const [editedCat, setEditedCat] = useState();
 
   const [filterValue, setFilterValue] = useState('');
   const [sortBy, setSortBy] = useState('id_asc');
-  const [perPage, setPerPage] = useState(10);
-  const [scans, setScans] = useState([]);
+  const [perPage, setPerPage] = useState(6);
+  const [cats, setCats] = useState([]);
 
   const filter = useDebounce(filterValue, 500);
 
@@ -39,8 +39,8 @@ export default function List() {
     isFetching,
     isFetchingNextPage,
     status,
-  } = useInfiniteQuery(['scans', { filter, sortBy, perPage }], async ({ pageParam = 1 }) => {
-    const data = await scanService.fetchAll(filter, sortBy, pageParam, perPage);
+  } = useInfiniteQuery(['cats', { filter, sortBy, perPage }], async ({ pageParam = 1 }) => {
+    const data = await catService.fetchAll(filter, sortBy, pageParam, perPage);
 
     return {
       ...data,
@@ -54,18 +54,18 @@ export default function List() {
     },
     onSuccess: (data) => {
       const s = (data && data.pages.reduce((acc, page) => [...acc, ...page.data], [])) || [];
-      setScans(s);
+      setCats(s);
     }
   })
 
-  console.log('SCANS', {
-    scans,
+  console.log('CATS', {
+    cats,
     isFetching,
     status
   });
 
-  function openEditModal(scan) {
-    setEditedScan(scan);
+  function openEditModal(cat) {
+    setEditedCat(cat);
     setEditOpen(true);
   }
 
@@ -74,29 +74,29 @@ export default function List() {
   }
 
   function refreshList() {
-    queryClient.invalidateQueries('scans');
+    queryClient.invalidateQueries('cats');
   }
 
-  async function handleEdit(scan) {
-    await scanService.updateScan(scan);
+  async function handleEdit(cat) {
+    await catService.updateCat(cat);
     refreshList();
     setEditOpen(false);
   }
 
-  async function handleNew(scan) {
-    await scanService.createScan(scan);
+  async function handleNew(cat) {
+    await catService.createCat(cat);
     refreshList();
     setNewOpen(false);
   }
 
   async function handleAdd() {
-    setNewScan({});
+    setNewCat({});
     setNewOpen(true);
   }
 
-  async function handleScanRemove(scanId, e) {
+  async function handleCatRemove(catId, e) {
     e.stopPropagation();
-    await scanService.removeScan(scanId);
+    await catService.removeCat(catId);
     refreshList();
   }
 
@@ -123,8 +123,8 @@ export default function List() {
           Per page:
         </label>
         <select name="perpage" id="perpage" value={perPage} onChange={(e) => setPerPage(e.target.value)}>
-          <option value="5">5</option>
-          <option value="10">10</option>
+          <option value="6">6</option>
+          <option value="12">12</option>
         </select>
       </div>
 
@@ -132,13 +132,12 @@ export default function List() {
         Add New
       </Button>
 
-      <div className="grid grid-cols-2 gap-2">
-        {scans.map((scan) => (
-          <Card key={scan.id} onClick={openEditModal.bind(this, scan)}>
-            <div>
-              {scan.id}: {scan.title}
-            </div>
-            <Button color="red" onClick={handleScanRemove.bind(this, scan.id)}>
+      <div className="grid grid-cols-3 gap-2">
+        {cats.map((cat) => (
+          <Card key={cat.id} onClick={openEditModal.bind(this, cat)}>
+            <img src={cat.image} className="object-cover rounded-full h-40 w-40" alt="Cat avatar" />
+            <p>{cat.name}</p>
+            <Button color="red" onClick={handleCatRemove.bind(this, cat.id)}>
               Remove
             </Button>
           </Card>
@@ -151,8 +150,8 @@ export default function List() {
         </Button>
       )}
 
-      {editedScan && <ScanModal header="Edit scan" isOpen={editOpen} scan={editedScan} onClose={() => setEditOpen(false)} onSubmit={handleEdit} />}
-      {newScan && <ScanModal header="New scan" isOpen={newOpen} scan={newScan} onClose={() => setNewOpen(false)} onSubmit={handleNew} />}
+      {editedCat && <CatModal header="Edit cat" isOpen={editOpen} cat={editedCat} onClose={() => setEditOpen(false)} onSubmit={handleEdit} />}
+      {newCat && <CatModal header="New cat" isOpen={newOpen} cat={newCat} onClose={() => setNewOpen(false)} onSubmit={handleNew} />}
     </div>
   );
 }

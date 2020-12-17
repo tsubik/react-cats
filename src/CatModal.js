@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 
-export default function ScanModal({ scan, header, isOpen, onSubmit, onClose }) {
-  const [edited, setEdited] = useState(scan);
+export default function CatModal({ cat, header, isOpen, onSubmit, onClose }) {
+  const [edited, setEdited] = useState(cat);
 
   useEffect(() => {
-    setEdited(scan);
-  }, [scan]);
+    setEdited(cat);
+  }, [cat]);
 
   function handleValueChange(property) {
     return function (e) {
-      const newScan = { ...edited };
-      newScan[property] = e.target.value;
-      setEdited(newScan);
+      const newCat = { ...edited };
+      newCat[property] = e.target.value;
+      setEdited(newCat);
     };
   }
 
@@ -44,7 +44,7 @@ export default function ScanModal({ scan, header, isOpen, onSubmit, onClose }) {
 
       <form onSubmit={handleSubmit} noValidate>
         <div className="relative p-6 flex-auto">
-          <input type="text" value={edited.title} className="input" onChange={handleValueChange('title')} /><br/>
+          <input type="text" value={edited.name} className="input" onChange={handleValueChange('name')} /><br/>
         </div>
 
         <div className="flex items-center justify-end p-6 border-t border-solid border-gray-300 rounded-b">

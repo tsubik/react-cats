@@ -1,7 +1,7 @@
 import cx from 'classnames';
 
 const THEME = {
-  primary: 'flex justify-between items-center p-2 my-2 border border-gray-700 shadow-lg rounded'
+  primary: 'flex flex-col justify-between items-center space-y-3 p-2 my-2 border border-gray-300 shadow-lg rounded'
 }
 
 function Card ({ theme = 'primary', children, ...rest }) {

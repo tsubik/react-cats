@@ -2,7 +2,7 @@ function fixedEncode(str) {
   return str.replace('-', '%2C');
 }
 
-const scan = {
+const cat = {
   fetchAll: function (filter, sortBy, page, perPage)  {
     const searchParams = new URLSearchParams();
     if (filter) {
@@ -18,12 +18,12 @@ const scan = {
       const rangeString = `[${rangeStart}-${rangeEnd}]`;
       searchParams.append('range', rangeString);
 
-      headers.append('Range', `scans=${rangeString}`)
+      headers.append('Range', `cats=${rangeString}`)
     }
 
     const queryString = fixedEncode(searchParams.toString());
     console.log('searchParams', queryString);
-    return fetch('http://localhost:3000/scans?' + queryString, { headers })
+    return fetch('http://localhost:3000/cats?' + queryString, { headers })
       .then(async res => {
         const rangeString = res.headers.get('Content-Range').replace('items ', '');
         const [fetchedRange, totalCount] = rangeString.split('/');
@@ -36,35 +36,35 @@ const scan = {
           hasMore: Number(fetchedRange.split('-')[1]) + 1 < Number(totalCount)
         };
 
-        console.log('Fetching scans', results);
+        console.log('Fetching cats', results);
 
         return results;
       });
   },
 
-  updateScan: function (scan) {
-    return fetch(`http://localhost:3000/scans/${scan.id}`, {
+  updateCat: function (cat) {
+    return fetch(`http://localhost:3000/cats/${cat.id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(scan)
+      body: JSON.stringify(cat)
     });
   },
 
-  createScan: function (scan) {
-    return fetch(`http://localhost:3000/scans`, {
+  createCat: function (cat) {
+    return fetch(`http://localhost:3000/cats`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(scan)
+      body: JSON.stringify(cat)
     });
   },
 
-  removeScan: function (scanId) {
-    return fetch(`http://localhost:3000/scans/${scanId}`, { method: 'DELETE' });
+  removeCat: function (catId) {
+    return fetch(`http://localhost:3000/cats/${catId}`, { method: 'DELETE' });
   }
 };
 
-export default scan;
+export default cat;
