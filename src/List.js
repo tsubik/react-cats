@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
-import { useQuery, useInfiniteQuery, useQueryClient } from 'react-query';
+import { useState } from 'react';
+import { useInfiniteQuery, useQueryClient } from 'react-query';
 
 import ScanModal from './ScanModal';
 import Button from './Button';
 import Card from './Card';
 
 import scanService from './scan';
+
+import { useDebounce } from './hooks';
 
 const sortOptions = {
   'title_desc': 'Title Descending',
@@ -20,9 +22,12 @@ export default function List() {
 
   const [editedScan, setEditedScan] = useState();
 
-  const [filter, setFilter] = useState('');
+  const [filterValue, setFilterValue] = useState('');
   const [sortBy, setSortBy] = useState('id_asc');
   const [perPage, setPerPage] = useState(10);
+  const [scans, setScans] = useState([]);
+
+  const filter = useDebounce(filterValue, 500);
 
   const queryClient = useQueryClient();
 
@@ -43,16 +48,21 @@ export default function List() {
     };
   }, {
     getNextPageParam: (lastPage, pages) => {
-      if (!lastPage.hasMore) return;
+      if (!lastPage.hasMore) return; // no more pages
 
       return lastPage.page + 1;
+    },
+    onSuccess: (data) => {
+      const s = (data && data.pages.reduce((acc, page) => [...acc, ...page.data], [])) || [];
+      setScans(s);
     }
   })
-  const scans = (data && data.pages.reduce((acc, page) => [...acc, ...page.data], [])) || [];
 
-  useEffect(() => {
-
-  }, [perPage]);
+  console.log('SCANS', {
+    scans,
+    isFetching,
+    status
+  });
 
   function openEditModal(scan) {
     setEditedScan(scan);
@@ -84,14 +94,6 @@ export default function List() {
     setNewOpen(true);
   }
 
-  function handleSortByChange(e) {
-    setSortBy(e.target.value);
-  }
-
-  function handlePerPageChange(e) {
-    setPerPage(e.target.value);
-  }
-
   async function handleScanRemove(scanId, e) {
     e.stopPropagation();
     await scanService.removeScan(scanId);
@@ -106,12 +108,12 @@ export default function List() {
         <label>
           Filter:
         </label>
-        <input type="text" className="ml-3 input" value={filter} onChange={(e) => setFilter(e.target.value)} />
+        <input type="text" className="ml-3 input" value={filterValue} onChange={(e) => setFilterValue(e.target.value)} />
 
         <label htmlFor="sortby">
           Sort By:
         </label>
-        <select name="sortby" id="sortby" value={sortBy} onChange={handleSortByChange}>
+        <select name="sortby" id="sortby" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
           {Object.keys(sortOptions).map((key) => (
             <option key={key} value={key}>{sortOptions[key]}</option>
           ))}
@@ -120,7 +122,7 @@ export default function List() {
         <label htmlFor="perpage">
           Per page:
         </label>
-        <select name="perpage" id="perpage" value={perPage} onChange={handlePerPageChange}>
+        <select name="perpage" id="perpage" value={perPage} onChange={(e) => setPerPage(e.target.value)}>
           <option value="5">5</option>
           <option value="10">10</option>
         </select>
