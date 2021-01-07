@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useInfiniteQuery, useQueryClient } from 'react-query';
 
-import CatModal from './CatModal';
-import Button from './Button';
-import Card from './Card';
+import CatModal from 'components/CatModal';
+import Button from 'components/Button';
+import Card from 'components/Card';
 
-import catService from './cat';
+import catService from 'cat';
 
-import { useDebounce } from './hooks';
+import { useDebounce } from 'hooks';
 
 const sortOptions = {
   'name_desc': 'Name Z-A Descending',
@@ -15,7 +15,7 @@ const sortOptions = {
   'id_asc': 'Newest first'
 };
 
-export default function List() {
+export default function Home() {
   const [editOpen, setEditOpen] = useState(false);
   const [newOpen, setNewOpen] = useState(false);
   const [newCat, setNewCat] = useState({});

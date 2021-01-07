@@ -11,7 +11,6 @@ function Button ({ type = 'button', color = 'blue', className, children, ...rest
     <button
       {...rest}
       type={type}
-      style={{ transition: "all .15s ease" }}
       className={cx({
         'btn': true,
         [COLORS[color]]: true,

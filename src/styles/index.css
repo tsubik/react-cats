@@ -5,6 +5,7 @@
 @layer components {
   .btn {
     @apply font-bold uppercase text-sm py-3 px-6 rounded shadow outline-none;
+    transition: all .15s ease;
   }
 
   .btn:focus {
