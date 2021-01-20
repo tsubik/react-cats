@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useInfiniteQuery, useQueryClient } from 'react-query';
+import { useMutation, useInfiniteQuery, useQueryClient } from 'react-query';
 import { useToasts } from 'react-toast-notifications';
 
 import CatModal from 'components/CatModal';
@@ -31,7 +31,15 @@ export default function Home() {
   const filter = useDebounce(filterValue, 500);
 
   const queryClient = useQueryClient();
-  const { addToast } = useToasts()
+  const { addToast } = useToasts();
+
+  const editMutation = useMutation(cat => catService.updateCat(cat), {
+    onSuccess: () => {
+      refreshList();
+      setEditOpen(false);
+      addToast('Saved Successfully', { appearance: 'success' });
+    }
+  });
 
   const {
     fetchNextPage,
@@ -69,11 +77,8 @@ export default function Home() {
     queryClient.invalidateQueries('cats');
   }
 
-  async function handleEdit(cat) {
-    await catService.updateCat(cat);
-    refreshList();
-    setEditOpen(false);
-    addToast('Saved Successfully', { appearance: 'success' })
+  function handleEdit(cat) {
+    editMutation.mutate(cat);
   }
 
   async function handleNew(cat) {

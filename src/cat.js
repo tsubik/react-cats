@@ -35,9 +35,6 @@ const cat = {
           totalCount,
           hasMore: Number(fetchedRange.split('-')[1]) + 1 < Number(totalCount)
         };
-
-        console.log('Fetching cats', results);
-
         return results;
       });
   },
