@@ -27,6 +27,14 @@ const data = {
 const restServer = new FakeRest.FetchServer('http://localhost:3000');
 restServer.toggleLogging();
 restServer.init(data);
+restServer.addRequestInterceptor(function (request) {
+  if (request.method === 'POST' && request.queryString.includes('cats')) {
+    request.requestJson['image'] = `http://placekitten.com/${200 + 3 * catId}/${200 + catId}`;
+    catId = catId + 1;
+  }
+  return request;
+});
+
 fetchMock.mock('begin:http://localhost:3000', restServer.getHandler());
 
 ReactDOM.render(

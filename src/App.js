@@ -1,4 +1,5 @@
-import { QueryClient, QueryClientProvider } from 'react-query'
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { ToastProvider } from 'react-toast-notifications';
 
 import Modal from 'react-modal';
 
@@ -11,7 +12,9 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Home />
+      <ToastProvider autoDismiss={true} autoDismissTimeout={3000}>
+        <Home />
+      </ToastProvider>
     </QueryClientProvider>
   )
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useInfiniteQuery, useQueryClient } from 'react-query';
+import { useToasts } from 'react-toast-notifications';
 
 import CatModal from 'components/CatModal';
 import Button from 'components/Button';
@@ -12,7 +13,7 @@ import { useDebounce } from 'hooks';
 const sortOptions = {
   'name_desc': 'Name Z-A Descending',
   'name_asc': 'Name A-Z',
-  'id_asc': 'Newest first'
+  'id_desc': 'Newest first'
 };
 
 export default function Home() {
@@ -23,22 +24,19 @@ export default function Home() {
   const [editedCat, setEditedCat] = useState();
 
   const [filterValue, setFilterValue] = useState('');
-  const [sortBy, setSortBy] = useState('id_asc');
+  const [sortBy, setSortBy] = useState('id_desc');
   const [perPage, setPerPage] = useState(6);
   const [cats, setCats] = useState([]);
 
   const filter = useDebounce(filterValue, 500);
 
   const queryClient = useQueryClient();
+  const { addToast } = useToasts()
 
   const {
-    /* data, */
-    /* error, */
     fetchNextPage,
     hasNextPage,
-    isFetching,
     isFetchingNextPage,
-    status,
   } = useInfiniteQuery(['cats', { filter, sortBy, perPage }], async ({ pageParam = 1 }) => {
     const data = await catService.fetchAll(filter, sortBy, pageParam, perPage);
 
@@ -58,12 +56,6 @@ export default function Home() {
     }
   })
 
-  console.log('CATS', {
-    cats,
-    isFetching,
-    status
-  });
-
   function openEditModal(cat) {
     setEditedCat(cat);
     setEditOpen(true);
@@ -81,12 +73,14 @@ export default function Home() {
     await catService.updateCat(cat);
     refreshList();
     setEditOpen(false);
+    addToast('Saved Successfully', { appearance: 'success' })
   }
 
   async function handleNew(cat) {
     await catService.createCat(cat);
     refreshList();
     setNewOpen(false);
+    addToast('New Cat Saved Successfully', { appearance: 'success' })
   }
 
   async function handleAdd() {
@@ -103,7 +97,7 @@ export default function Home() {
   return (
     <div className="container">
       <div
-        className="p-4 bg-gray-100 rounded flex items-center space-x-3 my-5"
+        className="flex items-center space-x-3 my-5"
       >
         <label className="block">
           <span className="text-gray-700">Filter</span>
@@ -121,7 +115,7 @@ export default function Home() {
 
         <label className="block">
           <span className="text-gray-700">Per page</span>
-          <select className="select block" value={perPage} onChange={(e) => setPerPage(e.target.value)}>
+          <select className="select block w-24" value={perPage} onChange={(e) => setPerPage(e.target.value)}>
             <option value="6">6</option>
             <option value="12">12</option>
           </select>
@@ -132,9 +126,9 @@ export default function Home() {
         Add New
       </Button>
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {cats.map((cat) => (
-          <Card key={cat.id} onClick={openEditModal.bind(this, cat)}>
+          <Card className="cursor-pointer" key={cat.id} onClick={openEditModal.bind(this, cat)}>
             <img src={cat.image} className="object-cover rounded-full h-40 w-40" alt="Cat avatar" />
             <p>{cat.name}</p>
             <Button color="red" onClick={handleCatRemove.bind(this, cat.id)}>
